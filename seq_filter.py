@@ -4,8 +4,7 @@ import sys
 import argparse
 
 def seq_parser(file):
-    temp_dict = dict()
-    temp_list = list()
+    temp_dict = list()
     lines=file.readlines()
     magic=7 #a test in a seq file is 7 lines, if not mod7, something wrong..
     if len(lines)%magic != 0:
@@ -28,10 +27,14 @@ def seq_parser(file):
             "rev": lines[x+1][9:-1],#from after "Revision=" (9char long)
             "Order": lines[x+4][6:-1]#from after "Order=" (6char long)
         }
-        temp_dict[(lines[x+2][5:-1])]=(seq_dict) #put in a dict based on guid
-        
+        #temp_dict[(lines[x+2][5:-1])]=(seq_dict) #put in a dict based on guid
+        temp_dict.append(seq_dict)
+
     return temp_dict
 
+def sort_data(cross_check, sort_keys):
+    for k in reversed(sort_keys.split(',')):
+        cross_check.sort(key=lambda x: x[k])
 
 def main():
 
@@ -51,15 +54,21 @@ def main():
 
     with open(args.seq_file,"r",encoding="utf-16") as f: #files are encoded in utf-16
         db1 = seq_parser(f)
+
+    sort_data(db1,'guid')
+    sort_data(db1,'name')
+
     
     #print the tests names and if they run.
+
     for x in db1:
-        #print( x, end=' : ' )
-        if db1[x]['Iteration'] == '0xFFFFFFFF':
+        print( x['guid'], end=' : ' )
+        if  x['Iteration'] == '0xFFFFFFFF':
             print ( 'OFF',end=" : ")
         else:
             print ('ON ',end=' : ')
-        print(db1[x]['name'])
+        print(x['name'])
+    print (len(db1))
         
 
 main()
